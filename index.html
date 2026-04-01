@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>提出物チェッカー</title>
+    <title>提出物チェッカー - 動作確認版</title>
     <style>
         * {
             margin: 0;
@@ -151,13 +151,14 @@
             padding: 15px;
             margin-bottom: 15px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 2px solid #e0e0e0;
         }
         
         .assignment-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             flex-wrap: wrap;
             gap: 10px;
         }
@@ -188,29 +189,36 @@
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            min-height: 50px;
         }
         
         .student-btn {
-            padding: 8px 12px;
+            padding: 10px 14px;
             border: 2px solid #e0e0e0;
             border-radius: 6px;
             background-color: white;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.3s ease;
-            min-width: 60px;
+            min-width: 70px;
             text-align: center;
+            font-weight: 500;
         }
         
         .student-btn:hover {
             background-color: #f8f9fa;
+            transform: translateY(-1px);
         }
         
         .student-btn.submitted {
             background-color: #2ecc71;
             color: white;
             border-color: #27ae60;
+            box-shadow: 0 2px 4px rgba(46, 204, 113, 0.3);
         }
         
         .student-btn.not-submitted {
@@ -241,13 +249,14 @@
             border-radius: 8px;
             padding: 15px;
             margin-top: 15px;
+            border: 2px solid #e0e0e0;
         }
         
         .roster-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #e0e0e0;
         }
         
@@ -257,21 +266,44 @@
         
         .roster-item-name {
             font-weight: bold;
+            font-size: 16px;
         }
         
         .roster-item-rate {
             color: #3498db;
             font-weight: bold;
+            font-size: 14px;
         }
         
         .delete-btn {
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 4px;
             font-size: 12px;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-submitted {
+            background-color: #2ecc71;
+        }
+        
+        .status-not-submitted {
+            background-color: #e74c3c;
         }
         
         @media (max-width: 768px) {
@@ -293,11 +325,12 @@
             
             .student-buttons {
                 justify-content: center;
+                gap: 10px;
             }
             
             .student-btn {
-                min-width: 70px;
-                padding: 10px 8px;
+                min-width: 80px;
+                padding: 12px 10px;
                 font-size: 16px;
             }
             
@@ -363,6 +396,7 @@
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('ページ読み込み完了 - 初期化開始');
             loadData();
             parseRoster();
             
@@ -371,6 +405,7 @@
             tabButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const tabName = this.getAttribute('data-tab');
+                    console.log('タブ切替:', tabName);
                     switchTab(tabName);
                 });
             });
@@ -379,6 +414,7 @@
             switchTab('main');
             
             document.getElementById('rosterInput').addEventListener('input', function() {
+                console.log('名簿入力変更');
                 parseRoster();
                 saveData();
             });
@@ -389,10 +425,14 @@
                     addAssignment();
                 }
             });
+            
+            console.log('初期化完了');
         });
 
         // タブ切り替え
         function switchTab(tabName) {
+            console.log('タブ切替関数呼出:', tabName);
+            
             // すべてのタブを非アクティブに
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
@@ -411,10 +451,13 @@
             if (activeContent) {
                 activeContent.classList.add('active');
             }
+            
+            console.log('タブ切替完了:', tabName);
         }
 
         // 名簿を解析
         function parseRoster() {
+            console.log('名簿解析開始');
             const rosterText = document.getElementById('rosterInput').value.trim();
             students = [];
             
@@ -434,12 +477,14 @@
                 });
             }
             
+            console.log('名簿解析完了 - 児童数:', students.length);
             updateRosterDisplay();
             renderAssignments();
         }
 
         // 名簿表示を更新
         function updateRosterDisplay() {
+            console.log('名簿表示更新');
             const rosterList = document.getElementById('rosterList');
             rosterList.innerHTML = '';
             
@@ -458,6 +503,8 @@
                 `;
                 rosterList.appendChild(item);
             });
+            
+            console.log('名簿表示更新完了');
         }
 
         // 児童の提出率を計算
@@ -478,6 +525,7 @@
 
         // 提出物を追加
         function addAssignment() {
+            console.log('提出物追加開始');
             const input = document.getElementById('assignmentInput');
             const isHomework = document.getElementById('isHomework').checked;
             const name = input.value.trim();
@@ -498,6 +546,7 @@
             input.value = '';
             document.getElementById('isHomework').checked = false;
             
+            console.log('提出物追加完了:', assignment.name);
             saveData();
             renderAssignments();
         }
@@ -518,18 +567,22 @@
             }
         }
 
-        // 提出物を表示
+        // 提出物を表示（デバッグ情報付き）
         function renderAssignments() {
+            console.log('提出物表示更新開始 - 提出物数:', assignments.length);
             const container = document.getElementById('assignmentsContainer');
             container.innerHTML = '';
             
             if (assignments.length === 0) {
                 container.innerHTML = '<p style="color: #7f8c8d;">提出物が登録されていません</p>';
+                console.log('提出物なし');
                 return;
             }
             
             assignments.forEach(assignment => {
                 const rate = getSubmissionRate(assignment.id);
+                console.log('提出物表示:', assignment.name, '提出率:', rate + '%');
+                
                 const item = document.createElement('div');
                 item.className = 'assignment-item';
                 
@@ -549,35 +602,60 @@
                 `;
                 
                 container.appendChild(item);
+                console.log('児童ボタン表示呼出 - 提出物ID:', assignment.id);
                 renderStudentButtons(assignment.id);
             });
+            
+            console.log('提出物表示更新完了');
         }
 
-        // 児童ボタンを表示
+        // 児童ボタンを表示（デバッグ情報付き）
         function renderStudentButtons(assignmentId) {
+            console.log('児童ボタン表示開始 - 提出物ID:', assignmentId, '児童数:', students.length);
             const container = document.getElementById(`buttons-${assignmentId}`);
-            container.innerHTML = '';
             
-            students.forEach(student => {
+            if (!container) {
+                console.error('コンテナが見つかりません - ID:', `buttons-${assignmentId}`);
+                return;
+            }
+            
+            container.innerHTML = '';
+            console.log('コンテナクリア完了');
+            
+            if (students.length === 0) {
+                container.innerHTML = '<p style="color: #7f8c8d; text-align: center;">名簿が入力されていません</p>';
+                console.log('児童なしメッセージ表示');
+                return;
+            }
+            
+            students.forEach((student, index) => {
                 const key = `${assignmentId}-${student.number}`;
                 const isSubmitted = submissions[key] || false;
+                
+                console.log('児童ボタン作成:', student.number, student.name, '提出状態:', isSubmitted ? '提出済' : '未提出');
                 
                 const button = document.createElement('button');
                 button.className = `student-btn ${isSubmitted ? 'submitted' : 'not-submitted'}`;
                 button.textContent = `${student.number} ${student.name}`;
                 button.onclick = function() {
+                    console.log('ボタンクリック:', student.number, student.name);
                     toggleSubmission(assignmentId, student.number);
                 };
                 
                 container.appendChild(button);
             });
+            
+            console.log('児童ボタン表示完了');
         }
 
         // 提出状態を切り替え
         function toggleSubmission(assignmentId, studentNumber) {
+            console.log('提出状態切替 - 提出物ID:', assignmentId, '児童番号:', studentNumber);
             const key = `${assignmentId}-${studentNumber}`;
-            submissions[key] = !submissions[key];
+            const currentState = submissions[key] || false;
+            submissions[key] = !currentState;
             
+            console.log('提出状態変更:', currentState ? '提出済→未提出' : '未提出→提出済');
             saveData();
             renderAssignments();
             updateRosterDisplay();
@@ -600,16 +678,19 @@
 
         // データを保存
         function saveData() {
+            console.log('データ保存');
             const data = {
                 assignments: assignments,
                 submissions: submissions,
                 roster: document.getElementById('rosterInput').value
             };
             localStorage.setItem('submissionCheckerData', JSON.stringify(data));
+            console.log('データ保存完了');
         }
 
         // データを読み込み
         function loadData() {
+            console.log('データ読込');
             const savedData = localStorage.getItem('submissionCheckerData');
             if (savedData) {
                 try {
@@ -619,9 +700,12 @@
                     if (data.roster) {
                         document.getElementById('rosterInput').value = data.roster;
                     }
+                    console.log('データ読込完了 - 提出物数:', assignments.length);
                 } catch (error) {
-                    console.error('データ読み込みエラー:', error);
+                    console.error('データ読込エラー:', error);
                 }
+            } else {
+                console.log('保存データなし');
             }
         }
     </script>
