@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提出物チェッカー (改良版)</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f3f4f6;
+        }
+        body { font-family: sans-serif; background: var(--bg); padding: 20px; color: #1f2937; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        h1 { font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 2px solid var(--primary); padding-bottom: 5px; }
+        .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
+        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+        button { cursor: pointer; padding: 8px 16px; border: none; border-radius: 6px; background: var(--primary); color: white; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #f3f4f6; }
+        .item:last-child { border: none; }
+        .checkbox-area { display: flex; align-items: center; gap: 10px; }
+        .delete-btn { background: #ef4444; font-size: 0.8rem; padding: 4px 8px; }
+        .share-area { margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ccc; }
+        .small-text { font-size: 0.75rem; color: #6b7280; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 提出物チェッカー</h1>
+    
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="新しい課題名 (例: 4/9)">
+        <button onclick="addTask()">追加</button>
+    </div>
+
+    <div id="taskList"></div>
+
+    <div class="share-area">
+        <p class="small-text">この状態を他の人に送るためのURLを作成します：</p>
+        <button onclick="generateShareUrl()" style="background: #10b981; width: 100%;">共有用URLをコピー</button>
+    </div>
+</div>
+
+<script>
+    let assignments = [];
+
+    // 1. 起動時にデータを読み込む
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataParam = urlParams.get('data');
+
+        if (dataParam) {
+            // URLにデータがある場合（共有された時）
+            try {
+                const decoded = JSON.parse(atob(dataParam));
+                assignments = decoded.assignments || [];
+                saveToLocal(); // 共有されたデータを自分の保存域にも入れる
+            } catch (e) {
+                console.error("データの読み込みに失敗しました", e);
+                loadFromLocal();
+            }
+        } else {
+            // URLにデータがない場合（いつもの自分の画面）
+            loadFromLocal();
+        }
+        render();
+    };
+
+    function addTask() {
+        const input = document.getElementById('taskInput');
+        if (!input.value) return;
+        assignments.push({
+            id: Date.now(),
+            name: input.value,
+            completed: false
+        });
+        input.value = '';
+        saveAndRender();
+    }
+
+    function toggleTask(id) {
+        assignments = assignments.map(t => t.id === id ? {...t, completed: !t.completed} : t);
+        saveAndRender();
+    }
+
+    function deleteTask(id) {
+        assignments = assignments.filter(t => t.id !== id);
+        saveAndRender();
+    }
+
+    function saveAndRender() {
+        saveToLocal();
+        render();
+    }
+
+    function saveToLocal() {
+        localStorage.setItem('myTasks', JSON.stringify(assignments));
+    }
+
+    function loadFromLocal() {
+        const saved = localStorage.getItem('myTasks');
+        if (saved) assignments = JSON.parse(saved);
+    }
+
+    function render() {
+        const list = document.getElementById('taskList');
+        list.innerHTML = assignments.map(t => `
+            <div class="item">
+                <div class="checkbox-area">
+                    <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})">
+                    <span style="${t.completed ? 'text-decoration: line-through; color: gray;' : ''}">${t.name}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteTask(${t.id})">削除</button>
+            </div>
+        `).join('');
+    }
+
+    // 2. 「共有用URL」を新しく作る機能
+    function generateShareUrl() {
+        const data = { assignments: assignments };
+        const encoded = btoa(JSON.stringify(data));
+        const newUrl = window.location.origin + window.location.pathname + '?data=' + encoded;
+        
+        navigator.clipboard.writeText(newUrl).then(() => {
+            alert("共有用URLをクリップボードにコピーしました！これを友達に送ってください。");
+        });
+    }
+</script>
+
+</body>
+</html>
